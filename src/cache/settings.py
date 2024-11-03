@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'notifications',
 ]
 
 MIDDLEWARE = [
@@ -121,3 +122,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Firebase settings
+FIREBASE_CREDENTIALS = os.path.join(BASE_DIR, 'credentials.json')  # Path to your credentials JSON
+FCM_URL = 'https://fcm.googleapis.com/fcm/send'
+
+# Static files
+STATICFILES_DIRS = [BASE_DIR / 'static']
