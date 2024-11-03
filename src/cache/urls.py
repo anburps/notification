@@ -16,11 +16,12 @@ Including another URLconf
 """
 # myproject/urls.py
 
+
 from django.contrib import admin
 from django.urls import path
 from notifications import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('send-push-notification/', views.send_push_notification, name='send_push_notification'),
+    path('create-product/', views.create_product, name='create_product'),
 ]
