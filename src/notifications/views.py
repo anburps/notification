@@ -1,33 +1,40 @@
 # notifications/views.py
 
+from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from firebase_admin import messaging
-from .firebase_init import firebase_admin
+from .models import Product
+from .firebase_init import firebase_admin  # Ensure firebase is initialized
 import json
 
 @csrf_exempt
-def send_push_notification(request):
+def create_product(request):
     if request.method == "POST":
         data = json.loads(request.body)
-        title = data.get('title', 'New Notification')
-        body = data.get('body', 'You have a new update!')
+        name = data.get("name")
+        price = data.get("price")
+        fcm_token = data.get("fcm_token")  # Optionally retrieve the FCM token
 
-        # Generate or retrieve the FCM token
-        fcm_token = generate_fcm_token()  # Implement as needed
+        # Create the Product object
+        product = Product.objects.create(name=name, price=price, fcm_token=fcm_token)
 
-        # Define the message
+        # Define notification message
+        notification_title = "Product Created Successfully"
+        notification_body = f"The product '{product.name}' has been added at ${product.price}!"
+
+        # Send Firebase notification
         message = messaging.Message(
             notification=messaging.Notification(
-                title=title,
-                body=body,
+                title=notification_title,
+                body=notification_body,
             ),
-            token=fcm_token,
+            token=fcm_token,  # Send to the provided token
         )
 
         try:
             response = messaging.send(message)
-            return JsonResponse({"success": True, "response": response}, status=200)
+            return JsonResponse({"success": True, "response": response, "message": "Product created and notification sent"}, status=201)
         except Exception as e:
             return JsonResponse({"success": False, "error": str(e)}, status=500)
 
