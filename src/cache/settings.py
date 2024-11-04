@@ -55,7 +55,7 @@ ROOT_URLCONF = 'cache.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'], 
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -129,3 +129,6 @@ FCM_URL = 'https://fcm.googleapis.com/fcm/send'
 
 # Static files
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+import os
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "static/service_account.json"

@@ -19,9 +19,10 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from notifications import views
+from django.urls import include
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('create-product/', views.create_product, name='create_product'),
+    path('', include('notifications.urls')),
 ]

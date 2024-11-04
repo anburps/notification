@@ -1,41 +1,57 @@
-# notifications/views.py
-
-from django.shortcuts import render
+import json
+import requests
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from firebase_admin import messaging
+from django.shortcuts import render
 from .models import Product
-from .firebase_init import firebase_admin  # Ensure firebase is initialized
-import json
+import google.auth
+from google.auth.transport.requests import Request
+
+# Firebase settings
+FCM_URL = 'https://fcm.googleapis.com/v1/projects/hrms-f4dab/messages:send'
+
+from google.oauth2 import service_account
+from google.auth.transport.requests import Request
+
+def get_access_token():
+    credentials = service_account.Credentials.from_service_account_file(
+        "static/service_account.json",
+        scopes=["https://www.googleapis.com/auth/firebase.messaging"]
+    )
+    credentials.refresh(Request())
+    return credentials.token
+
 
 @csrf_exempt
 def create_product(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        name = data.get("name")
-        price = data.get("price")
-        fcm_token = data.get("fcm_token")  # Optionally retrieve the FCM token
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        price = request.POST.get('price')
 
-        # Create the Product object
-        product = Product.objects.create(name=name, price=price, fcm_token=fcm_token)
+        # Create the Product instance
+        product = Product.objects.create(name=name, price=price)
 
-        # Define notification message
-        notification_title = "Product Created Successfully"
-        notification_body = f"The product '{product.name}' has been added at ${product.price}!"
+        notification_data = {
+            "message": {
+                "topic": "all",
+                "notification": {
+                    "title": "Product Created Successfully",
+                    "body": f"{product.name} has been added at price {product.price}!",
+                }
+            }
+        }
+        print("notification",notification_data)
 
-        # Send Firebase notification
-        message = messaging.Message(
-            notification=messaging.Notification(
-                title=notification_title,
-                body=notification_body,
-            ),
-            token=fcm_token,  # Send to the provided token
-        )
+        headers = {
+            'Authorization': f'Bearer {get_access_token()}',
+            'Content-Type': 'application/json; UTF-8'
+        }
 
-        try:
-            response = messaging.send(message)
-            return JsonResponse({"success": True, "response": response, "message": "Product created and notification sent"}, status=201)
-        except Exception as e:
-            return JsonResponse({"success": False, "error": str(e)}, status=500)
+        response = requests.post(FCM_URL, headers=headers, data=json.dumps(notification_data))
+        print("response",response)
+        if response.status_code == 200:
+            return JsonResponse({'message': 'Product created and notification sent successfully!'}, status=200)
+        else:
+            return JsonResponse({'message': 'Product created, but notification failed to send.'}, status=500)
 
-    return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
+    return render(request, 'create_product.html')

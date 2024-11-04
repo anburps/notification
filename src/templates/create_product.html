@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Product</title>
+</head>
+<body>
+    <h1>Create Product</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name" required><br><br>
+
+        <label for="price">Price:</label>
+        <input type="number" name="price" id="price" step="0.01" required><br><br>
+
+        <button type="submit">Create Product</button>
+    </form>
+
+    <!-- Firebase SDK Scripts -->
+    <script type="module">
+        // Import the Firebase SDKs (use the correct versions if they differ)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+
+            apiKey: "AIzaSyDkmg9mZCFrBtOpy7z549yuqaK1jtGb28c",
+
+            authDomain: "hrms-f4dab.firebaseapp.com",
+
+            projectId: "hrms-f4dab",
+
+            storageBucket: "hrms-f4dab.firebasestorage.app",
+
+            messagingSenderId: "341801491085",
+
+            appId: "1:341801491085:web:af8c4da803a609cd3460c4",
+
+            measurementId: "G-DH7BMBMDJD"
+
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const messaging = getMessaging(app);
+
+        // Request permission to send notifications
+        async function requestPermission() {
+            try {
+                const token = await getToken(messaging, { vapidKey: "BFHOW3Rnwly4CWh8tEjEjK4PMs7vFFzJFNoZL6s_HknX3-V3FeRAxX30JLCP6YchPpXk49RsoqpfbfFolnx3DEQ" });
+                console.log("FCM Token:", token);
+            } catch (error) {
+                console.error("Error getting FCM token:", error);
+            }
+        }
+
+        // Call the function to request permission
+        requestPermission();
+
+        // Handle incoming messages
+        onMessage(messaging, (payload) => {
+            console.log("Message received. ", payload);
+            // Customize your notification handling here
+        });
+    </script>
+</body>
+</html>
